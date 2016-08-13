@@ -32,7 +32,7 @@ vocab 	= read.delim(paste(filePath, "/vocabulary.dat", sep = ''), sep = '\n', he
 ## Load the results into list of length ntopics of word/time matrices
 ## tl[[topicNumber]] returns a matrix of size V x ntimes
 tl 		= lapply(topics, function(topic) {
-			d = scan(paste(filePath, "/", outputPath, "/lda-seq/topic-0", toString(topic), "-var-e-log-prob.dat", sep=''))
+			d = scan(paste(filePath, "/", outputPath, "/lda-seq/topic-", toString(topic), "-var-e-log-prob.dat", sep=''))
 			f = matrix(d, ncol=ntimes, byrow = TRUE)
 			rownames(f) <- 1:length(vocab)
 			return(f)
