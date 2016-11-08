@@ -1,4 +1,7 @@
+options(stringsAsFactors = FALSE)
 
+#### Generic functions for analysis ####
+#### Must have model loaded with XFGdtmres.r ####
 
 ## Jensen Shannon divergence
 JS = function(p, q) {
@@ -20,7 +23,7 @@ termScore = function(id, topic, time) {
 
 ## Helper to convert time in string format to timeslice number
 dateToSlice = function(strTime) {
-	return(which(as.POSIXct(strTime) < axisLab)[1])
+	return(which(as.Date(strTime) < as.Date(axisLab) + 7)[1])
 }
 
 ## Helper to convert timeslice number to time in string format
@@ -38,8 +41,8 @@ topicProp = function(topic) {
 	for (x in 1:ntimes) {
 		if (!is.na(times[x])) {
 			next1 = current + times[x] - 1
-			timeDivided[[x]] = gamma[current:next1,topi]
-			current = current + times[x] + - 1
+			timeDivided[[x]] = gamma[current:next1,topic]
+			current = next1
 		} else {
 			timeDivided[[x]] = 0
 		}
@@ -54,7 +57,7 @@ topicProp = function(topic) {
 
 ## Returns vector of length ndocs of document ids which exhibit highest topic 
 ## probabilities
-topDocTopic = function(topic, ndocs) {
+topDocTopic = function(topic, ndocs = 1) {
 	a = sort(gamma[,topic], decreasing = TRUE) 
 	return(a[1:ndocs])
 }
@@ -62,18 +65,22 @@ topDocTopic = function(topic, ndocs) {
 	
 	
 ## Returns top nwords from topic topic in time time using termScore ranking
-termTime = function(topic, time, nwords) {
-	termsRanked = sapply(1:length(vocab), function(termId) {return(termScore(termId, topic, time))})
-	t1 			= sort(termsRanked, decreasing = TRUE)
+termTime = function(topic, time, nwords, termScore = FALSE) {
+	if (termScore) {
+		termsRanked = sapply(1:length(vocab), function(termId) {return(termScore(termId, topic, time))})
+	} else {
+		termsRanked = sapply(1:length(vocab), function(termId) {return(tl[[topic]][termId, time])})
+	}
+	t1 		= sort(termsRanked, decreasing = TRUE)
 	return(c(vocab[as.integer(names(t1[1:nwords]))]))
 }
 
 
 ## Returns evolution of top nwords for topic topic
-termTimes = function(topic, nwords) {
+termTimes = function(topic, nwords, termScore = FALSE) {
 	ws = list()
 	for (time in 1:ntimes) {
-		ws[[time]] = termTime(topic, time, nwords)
+		ws[[time]] = termTime(topic, time, nwords, termScore)
 	}
 	return(ws)
 }
@@ -81,22 +88,32 @@ termTimes = function(topic, nwords) {
 
 ## Returns evolution of a given word in a given topic
 ## Choice of matching word exactly or with substring
-termEvo = function(term, topic, substr = FALSE) {
+termEvo = function(term, topic, termScore = FALSE, substr = FALSE) {
 	if (substr == TRUE) {
 		termIds = which(grepl(term, vocab))
 		evo 	= c()
 		for (time in 1:ntimes) {
 			evo = c(evo, sum(sapply(1:length(termIds), 
 							function(x) {
-								return(termScore(x, topic, time))
+								if (termScore) {
+									return(termScore(termIds[x], topic, time))
+								} else {
+									return(exp(tl[[topic]][termIds[x], time]))
+								}
 							})))
 		}
 		return(evo)
 	}
 	termId	= which(term == vocab)
 	evo 	= c()
-	for (time in 1:ntimes) {
-		evo = c(evo, termScore(termId, topic, time))
+	if (termScore) {
+		for (time in 1:ntimes) {
+			evo = c(evo, termScore(termId, topic, time))
+		}
+	} else {
+		for (time in 1:ntimes) {
+			evo = c(evo, exp(tl[[topic]][termId, time]))
+		}
 	}
 	return(evo)
 }
@@ -104,11 +121,11 @@ termEvo = function(term, topic, substr = FALSE) {
 
 ## Returns the topic for which the term achieves maximum weight
 ## Choice of exact term or substring
-maxWeight = function(term, substr = FALSE) {
+maxWeight = function(term, termScore = FALSE, substr = FALSE) {
 	termId = which(term == vocab)
 	top = c()
 	for (topic in 1:ntopics) {
-		top = c(top, sum(termEvo(term, topic, substr)))
+		top = c(top, sum(termEvo(term, topic, termScore, substr)))
 	}
 	a   = tail(sort(top), 1)
 	return(which(a == top))
@@ -127,15 +144,5 @@ seqJS = function(topic) {
 	}	
 	return(JsVec)
 }
-
-## Return timeslices that go over a certain threshold on Jenson Shannon divergence
-JSthreshold = function(threshold) {
-	slices = c()
-	for (topic in ntopics) {
-		change = seqJS(topic)
-		slices = c(slices, which(change > threshold))
-	}
-	return(slices)
-}
-
+		
 

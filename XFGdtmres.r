@@ -1,20 +1,22 @@
-source('analysisFunctions')
+source('analysisFunctions.R')
+options(stringsAsFactors = FALSE)
 
 ## RESULTS LOADER
 
 ## PARAMETERS
 
 ## xaxis labels
-start 	= '2012-05-18'
-end 	= '2016-07-22'
-axisLab = seq(as.POSIXct(start), as.POSIXct(end), by = "2 weeks")
+start 	= '2009-11-22'
+end 		= '2016-08-06'
+granularity = '1 week'
+axisLab 	= seq(as.POSIXct(start), as.POSIXct(end), by = granularity)
 
 ## Number of time slices and number of topics
-ntimes 	= 110
-ntopics = 50
+ntimes  	= 350
+ntopics		= 50
 
 ## Input path and output path
-filePath 	= 'bitcointalk'
+filePath 	= 'bitc'
 outputPath 	= 'output'
 
 
