@@ -2,7 +2,7 @@ Name of Quantlet: XFGdtmres
 
 Published in: XFG
 
-Description: 'Loads output from dynamic topic model and provides tools for analysis.'
+Description: 'Loads output from dynamic topic model and provides tools for analysis. Includes generic analysis, event analysis and model coherence.'
 
 Keywords: 'analysis, dynamic, model, LDA, text-mining, data-visualization, cluster-analysis, 
 descriptive, classification, probability, data-adjustment'

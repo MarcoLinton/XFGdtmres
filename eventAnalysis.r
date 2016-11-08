@@ -148,8 +148,8 @@ threshTopics = function(term, threshold = 0.001, termScore = FALSE, substr = FAL
 filePath = 'events/'
 
 ## Load words to test and data frame of words and event dates
-wordVec = scan(paste(filePath, 'hackVec.dat', sep = ''), what = character())
-dateVec = read.csv(paste(filePath, 'hackDate.dat', sep = ''))
+wordVec = scan(paste(filePath, 'eventVec.dat', sep = ''), what = character())
+dateVec = read.csv(paste(filePath, 'eventDate.dat', sep = ''))
 
 ## Detect events and check if they are correct and what the topic proportion was
 events = eventDf(wordVec, 3, 0.001)
