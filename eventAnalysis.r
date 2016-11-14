@@ -7,7 +7,7 @@ options(stringsAsFactors = FALSE)
 ## Compares detected events with known events
 checkEvents = function(events, dates) {
 	
-	df = data.frame(word = character(), topics = character(), detected = logical(), heat = character())
+	df = data.frame(label = character(), word = character(), topics = character(), detected = logical(), heat = character())
 	
 	for (i in 1:dim(dates)[1]) {
 	
@@ -17,6 +17,7 @@ checkEvents = function(events, dates) {
 	
 		## Determine which events to check against known dates of events
 		word = dates$word[i]
+		label = dates$label[i]
 		datesCheck = which(word == events$word)
 		
 		if (dates$end[i] == '') {
@@ -38,12 +39,12 @@ checkEvents = function(events, dates) {
 			## Save topics in which event was detected correctly and determine the topic temperature
 			if (detected1 & !(events$topic[x] %in% topics)) {
 				topics = c(topics, events$topic[x])
-				heat = c(heat, mean(topicProp(as.integer(events$topic[x]))[dateToSlice(start):dateToSlice(end)]) - 1/ntopics)
+				heat = c(heat, max(topicProp(as.integer(events$topic[x]))[(dateToSlice(start) - 1):dateToSlice(end)]) - mean(topicProp(events$topic[x])))
 			}
 			
 			detected = detected | detected1
 		}
-		df = rbind(df, data.frame(word, topics = paste(topics, collapse = ','), detected, heat = paste(heat, collapse = ',')))
+		df = rbind(df, data.frame(label, word, topics = paste(topics, collapse = ','), detected, heat = paste(heat, collapse = ',')))
 	}
 	
 	print(paste(sum(as.integer(df$detected)), 'events detected out of', length(df$detected)))
@@ -66,7 +67,7 @@ dateIntersection = function(a, b, x, y) {
 
 
 ## Takes as input a vector of words to check for events and an event detection limit v
-eventDf = function(wordVec, v, threshold = 0.001) {
+eventDf = function(wordVec, v, threshold = 0.0001) {
 	
 	eventsAll = data.frame(word = character(), topic = integer(), start = character(), end = character())
 	
@@ -92,7 +93,7 @@ eventDf = function(wordVec, v, threshold = 0.001) {
 
 
 ## Detects an event in the input words timeline
-eventDetect = function(word, topic, v, threshold = 0.001) {
+eventDetect = function(word, topic, v, threshold = 0.0001) {
 	times = c()
 	evo = c()
 	event = FALSE
@@ -152,6 +153,6 @@ wordVec = scan(paste(filePath, 'eventVec.dat', sep = ''), what = character())
 dateVec = read.csv(paste(filePath, 'eventDate.dat', sep = ''))
 
 ## Detect events and check if they are correct and what the topic proportion was
-events = eventDf(wordVec, 3, 0.001)
+events = eventDf(wordVec, 2, 0.0001)
 check = checkEvents(events, dateVec)
 

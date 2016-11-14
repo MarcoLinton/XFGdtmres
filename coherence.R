@@ -5,11 +5,12 @@ options(stringsAsFactors = FALSE)
 ## Parameters of Model and Umass measure ##
 nwords = 20
 ntopics = 30
-ntimes = 100
+start = 1
+nslices = 100
 eta = 0.1
 
 ## File path of -mult.dat and -seq.dat
-filePath = "/"
+filePath = paste("models/topics", as.character(ntopics), '/', sep = '')
 
 
 #### Functions for measuring umass coherence ####
@@ -93,7 +94,7 @@ slices = read.table(paste(filePath, "-seq.dat", sep = ""), sep = "\n")
 ## Calculate Umass for all chained LDA models
 current = 1
 chainedMeasure = list()
-for (time in 1:ntimes) {
+for (time in start:(start + nslices) {
 	
 	## Subset the corpus
 	next1 = current + slices[time] - 1

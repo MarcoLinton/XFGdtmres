@@ -13,11 +13,11 @@ axisLab 	= seq(as.POSIXct(start), as.POSIXct(end), by = granularity)
 
 ## Number of time slices and number of topics
 ntimes  	= 350
-ntopics		= 50
+ntopics		= 30
 
 ## Input path and output path
-filePath 	= 'bitc'
-outputPath 	= 'output'
+filePath 	= paste('models/topics', as.character(ntopics), '/', sep = '')
+outputPath 	= 'output/'
 
 
 ## Creates vec of topic ids for loading results
@@ -29,12 +29,12 @@ topics 	= sapply(0:(ntopics - 1), function(x) {
 		})
 	
 ## Load vocab
-vocab 	= read.delim(paste(filePath, "/vocabulary.dat", sep = ''), sep = '\n', header = FALSE)[,1]
+vocab 	= read.delim(paste(filePath, "vocabulary.dat", sep = ''), sep = '\n', header = FALSE)[,1]
 
 ## Load the results into list of length ntopics of word/time matrices
 ## tl[[topicNumber]] returns a matrix of size V x ntimes
 tl 		= lapply(topics, function(topic) {
-			d = scan(paste(filePath, "/", outputPath, "/lda-seq/topic-", toString(topic), "-var-e-log-prob.dat", sep=''))
+			d = scan(paste(filePath, outputPath, "lda-seq/topic-", toString(topic), "-var-e-log-prob.dat", sep=''))
 			f = matrix(d, ncol=ntimes, byrow = TRUE)
 			rownames(f) <- 1:length(vocab)
 			return(f)
@@ -45,14 +45,14 @@ tl 		= lapply(topics, function(topic) {
 	
 ## Load the topic document proportions
 ## Gives a matrix of size Documents x topics, documents are ordered by time
-a = scan(paste(filePath, "/", outputPath, "/lda-seq/gam.dat", sep = ""))
+a = scan(paste(filePath, outputPath, "lda-seq/gam.dat", sep = ""))
 b = matrix(a, ncol = ntopics, byrow = TRUE)
 rs = rowSums(b)
 gamma = b / rs
 rownames(gamma) = 1:dim(gamma)[1]
 
 ## Load the time slices
-times = read.table(paste(filePath, "/-seq.dat", sep = ""), sep = "\n")
+times = read.table(paste(filePath, "-seq.dat", sep = ""), sep = "\n")
 times = c(times)[[1]]
 times = times[2:length(times)]
 	
